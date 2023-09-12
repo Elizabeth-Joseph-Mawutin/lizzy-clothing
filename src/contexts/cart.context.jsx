@@ -21,7 +21,7 @@ const removeCartItem = (cartItems, cartItemToRemove) => {
 	);
 
 	if(existingCartItem.quantity === 1) {
-		return cartItems.filter(cartItem => cartItem.id !== cartItemToRemove.id)
+		return cartItems.filter((cartItem) => cartItem.id !== cartItemToRemove.id)
 	}
 
 	return cartItems.map((cartItem) => cartItem.id === cartItemToRemove.id ? 
@@ -30,34 +30,49 @@ const removeCartItem = (cartItems, cartItemToRemove) => {
 
 };
 
+const clearCartItem = (cartItems, cartItemToClear) => cartItems.filter((cartItem) => cartItem.id !== cartItemToClear.id)
+
+
 export const cartContext = createContext ({
 	isCartOpen: false,
 	setIsCartOpen: () => {},
 	cartItems: [],
 	addItemToCart: () => {},
 	removeItemFromCart: () => {},
-	cartCount: 0
+	clearItemFromCart: () => {},
+	cartCount: 0,
+	cartTotal: 0
 });
 
 export const CartProvider = ({children}) => {
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [cartItems, setCartItems] = useState([]);
 	const [cartCount, setCartCount] = useState(0);
+	const [cartTotal, setCartTotal] = useState(0);
 	
 	useEffect(() => {
 		const newCartCount = cartItems.reduce((total, cartItem) => total + cartItem.quantity, 0)
 		setCartCount(newCartCount);
 	}, [cartItems])
 
+	useEffect(() => {
+		const newCartTotal = cartItems.reduce((total, cartItem) => total + cartItem.quantity * cartItem.price, 0);
+		setCartTotal(newCartTotal);
+	}, [cartItems])
+
 	const addItemToCart = (productToAdd) => {
 		setCartItems(addCartItem(cartItems, productToAdd));
-	}
+	};
 
 	const removeItemToCart = (cartItemToRemove) => {
 		setCartItems(removeCartItem(cartItems, cartItemToRemove));
-	}
+	};
 
-	const value = {isCartOpen, setIsCartOpen, addItemToCart, removeItemToCart, cartItems, cartCount}; 
+	const clearItemFromCart = (cartItemToClear) => {
+		setCartItems(clearCartItem(cartItems, cartItemToClear));
+	};
+
+	const value = {isCartOpen, setIsCartOpen, addItemToCart, removeItemToCart, clearItemFromCart, cartItems, cartCount, cartTotal}; 
 	
 	return <cartContext.Provider value={value}>{children}</cartContext.Provider>;
 };
